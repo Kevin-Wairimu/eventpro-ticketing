@@ -1,0 +1,29 @@
+/* src/styles/global.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+/* body, html, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  background: #f5f5f5;
+} */
+
+/* Buttons */
+button {
+  cursor: pointer;
+  transition: 0.3s all ease;
+}
+button:hover {
+  opacity: 0.85;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}

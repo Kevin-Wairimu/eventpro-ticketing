@@ -1,0 +1,265 @@
+/* === MINIMAL CLIENT DASHBOARD STYLES (Mobile-First) === */
+:root { --client-primary: #6a11cb; --client-bg: #F8F9FA; --client-card-bg: #FFFFFF; --client-text-dark: #2D3748; --client-text-light: #718096; --client-green: #38A169; --client-red: #E53E3E; --client-orange: #DD6B20; --client-border: #E2E8F0; }
+
+/* --- Layouts --- */
+.client-layout { display: flex; min-height: 100vh; background-color: var(--client-bg); font-family: 'Segoe UI', sans-serif; }
+.client-main-content { flex-grow: 1; display: flex; flex-direction: column; width: 100%; }
+.client-page-container { padding: 20px; flex-grow: 1; animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Sidebar (Same responsive structure as others) --- */
+.client-sidebar { width: 260px; background: var(--client-card-bg); border-right: 1px solid var(--client-border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100%; z-index: 1200; transform: translateX(-100%); transition: transform 0.3s ease; }
+.client-sidebar.open { transform: translateX(0); }
+.overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1150; }
+.client-sidebar-header { display: flex; align-items: center; padding: 25px; gap: 12px; }
+.logo-icon-wrapper { background: var(--client-primary); color: #fff; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; }
+.client-sidebar-header h2 { font-size: 1.2rem; color: var(--client-text-dark); margin: 0; }
+.client-sidebar-header span { font-size: 0.8rem; color: var(--client-text-light); }
+.client-sidebar-nav { flex-grow: 1; padding-top: 20px; }
+.client-sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+.client-sidebar-nav a { display: flex; align-items: center; gap: 15px; padding: 15px 25px; margin: 5px 15px; color: var(--client-text-dark); text-decoration: none; font-weight: 500; transition: all 0.3s; border-radius: 8px; }
+.client-sidebar-nav a:hover { color: var(--client-primary); }
+.client-sidebar-nav a.active { background-color: #f3efff; color: var(--client-primary); }
+.sidebar-footer { padding: 20px 0; margin: 0 15px; border-top: 1px solid var(--client-border); }
+.sidebar-footer a, .sidebar-logout-btn { display: flex; align-items: center; gap: 15px; padding: 15px; width: 100%; color: var(--client-text-light); text-decoration: none; font-weight: 500; transition: all 0.3s; border-radius: 8px; background: none; border: none; font-family: inherit; font-size: 1rem; cursor: pointer; }
+.sidebar-footer a:hover, .sidebar-logout-btn:hover { color: var(--client-red); }
+
+/* --- Dashboard Content --- */
+.dashboard-welcome h1 { font-size: 1.8rem; color: var(--client-text-dark); margin: 0 0 5px 0; }
+.dashboard-welcome p { color: var(--client-text-light); margin-bottom: 30px; }
+.ticket-section { margin-bottom: 40px; }
+.ticket-section h2 { font-size: 1.5rem; color: var(--client-text-dark); border-bottom: 1px solid var(--client-border); padding-bottom: 15px; margin-bottom: 20px; }
+.ticket-grid { display: grid; gap: 20px; grid-template-columns: 1fr; /* Mobile: 1 column */ }
+.no-tickets-message { color: var(--client-text-light); }
+.ticket-card { background: var(--client-card-bg); border-radius: 12px; border: 1px solid var(--client-border); box-shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; }
+.ticket-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.ticket-image { width: 100%; height: 150px; object-fit: cover; }
+.ticket-details { padding: 20px; }
+.ticket-details h3 { margin: 0 0 10px 0; font-size: 1.2rem; }
+.ticket-details p { margin: 0 0 15px 0; color: var(--client-text-light); display: flex; align-items: center; gap: 8px; }
+.status-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; }
+.status-pill.approved { background: #e0f8f0; color: var(--client-green); }
+.status-pill.pending { background: #fff8e1; color: var(--client-orange); }
+.status-pill.completed { background: #e9ecef; color: var(--client-text-light); }
+
+@media (min-width: 768px) {
+  .client-page-container { padding: 30px; }
+  .dashboard-welcome h1 { font-size: 2rem; }
+  .ticket-grid { grid-template-columns: repeat(2, 1fr); } /* Tablet: 2 columns */
+}
+@media (min-width: 1200px) {
+  .ticket-grid { grid-template-columns: repeat(3, 1fr); } /* Desktop: 3 columns */
+}
+
+/* === NEW STYLES for Client Profile & Settings Pages === */
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Space between form cards */
+}
+
+.form-card {
+  background: var(--client-card-bg);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--client-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.form-card h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: var(--client-text-dark);
+  border-bottom: 1px solid var(--client-border);
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+/* --- Profile Header Section --- */
+.profile-header {
+  display: flex;
+  flex-direction: column; /* Stack vertically on mobile */
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.avatar-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--client-text-dark);
+}
+
+.profile-info p {
+  margin: 0;
+  color: var(--client-text-light);
+}
+
+.form-divider {
+  border: none;
+  border-top: 1px solid var(--client-border);
+  margin: 0 0 25px 0; /* Margin only at the bottom */
+}
+
+/* --- Form Elements --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* 1 column on mobile */
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--client-text-dark);
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--client-primary);
+  box-shadow: 0 0 0 3px rgba(106, 27, 203, 0.2);
+}
+
+.form-input[readOnly] {
+  background-color: #f7f8fc;
+  cursor: not-allowed;
+  color: var(--client-text-light);
+}
+
+/* For "Data & Privacy" section */
+.form-group-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.form-description {
+  margin: 0;
+  color: var(--client-text-light);
+  flex-grow: 1;
+}
+
+/* --- Action Buttons --- */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.btn-primary-action, .btn-secondary-action {
+  border: none;
+  padding: 12px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-action {
+  background: linear-gradient(135deg, var(--client-primary), #2575fc);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(106, 17, 203, 0.2);
+}
+
+.btn-secondary-action {
+  background: #F8F9FA;
+  color: var(--client-text-dark);
+  border: 1px solid var(--client-border);
+}
+
+.btn-secondary-action:hover {
+  background: #e9ecef;
+}
+
+
+/* === TABLET & DESKTOP MEDIA QUERIES === */
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 columns on larger screens */
+  }
+
+  .profile-header {
+    flex-direction: row; /* Side-by-side on larger screens */
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .btn-secondary-action {
+    margin-left: auto; /* Push button to the far right */
+  }
+  
+  .form-group-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* === ADD THESE STYLES to clientDashboard.css === */
+
+/* === CLIENT HEADER STYLES (Replace existing .client-header rule) === */
+
+.client-header {
+  display: flex;
+  justify-content: space-between; /* This is the key change */
+  align-items: center;
+  padding: 20px;
+  background: var(--client-card-bg);
+  border-bottom: 1px solid var(--client-border);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Ensure the title doesn't take up too much space on smaller screens */
+.header-title {
+  display: none; /* Hide title on very small screens */
+}
+
+/* --- ADD this media query at the bottom of the file --- */
+@media (min-width: 576px) {
+  .header-title {
+    display: block; /* Show title on small screens and up */
+  }
+}
