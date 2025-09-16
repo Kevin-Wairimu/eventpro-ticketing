@@ -25,6 +25,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import EmployeeLayout from "./components/employee/EmployeeLayout";
 import ClientLayout from "./components/client/ClientLayout";
 import CheckoutPage from "./pages/CheckoutPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 
 // --- Public Page Components ---
 import LandingPage from "./pages/LandingPage";

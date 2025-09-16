@@ -25,11 +25,8 @@ const LandingPage = () => {
       <header className="hero">
         <div className="hero-content">
           <h1>Unforgettable <span className="highlight">Events</span> Await You</h1>
-          <p className="hero-subtitle">Creating magical moments and extraordinary experiences that bring people together since 2015.</p>
-          <div className="hero-buttons">
-            <button className="btn-primary">Explore Events</button>
-            <button className="btn-secondary">Learn More</button>
-          </div>
+          <p className="hero-subtitle">Creating magical moments and extraordinary experiences that bring people together since 2022.</p>
+          
         </div>
       </header>
 
