@@ -41,42 +41,70 @@ const LandingPage = () => {
 
       <section id="about" className="about-section">{/* ...About content... */}</section>
 
+
+
+      {/* --- EVENTS SECTION --- */}
       <section id="events" className="events-section">
         <div className="section-container">
           <h2 className="section-title">Upcoming Events</h2>
           <div className="events-grid">
-            {/* --- UPDATED: Pass all event details to the handler --- */}
+            
             <div className="event-card">
               <img src={foodWineImage} alt="Food & Wine Expo" />
               <div className="event-info">
-                <div><h3>Food & Wine Expo</h3>{/* ... */}</div>
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('food-wine-expo', 'Food & Wine Expo', 75.00)}>Buy Ticket</button>
+                <div>
+                  <span className="event-tag corporate">Food & Wine</span>
+                  <h3>Food & Wine Expo</h3>
+                  {/* ... */}
+                </div>
+                {/* --- FIX: Use the exact matching ID from the backend --- */}
+                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('food-wine-expo-2024', 'Food & Wine Expo', 75.00)}>Buy Ticket</button>
               </div>
             </div>
+
             <div className="event-card">
               <img src={carAuctionImage} alt="Classic Car Auction" />
               <div className="event-info">
-                <div><h3>Classic Car Auction</h3>{/* ... */}</div>
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('car-auction', 'Classic Car Auction', 25.00)}>Buy Ticket</button>
+                <div>
+                  <span className="event-tag auction">Auction</span>
+                  <h3>Classic Car Auction</h3>
+                  {/* ... */}
+                </div>
+                {/* --- FIX: Use the exact matching ID from the backend --- */}
+                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('classic-car-auction-fall', 'Classic Car Auction', 25.00)}>Buy Ticket</button>
               </div>
             </div>
+
             <div className="event-card">
               <img src={carnivoreFestImage} alt="Summer Carnivore Fest" />
               <div className="event-info">
-                <div><h3>Summer Carnivore Fest</h3>{/* ... */}</div>
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('carnivore-fest', 'Summer Carnivore Fest', 50.00)}>Buy Ticket</button>
+                <div>
+                  <span className="event-tag festival">Festival</span>
+                  <h3>Summer Carnivore Fest</h3>
+                  {/* ... */}
+                </div>
+                {/* --- FIX: Use the exact matching ID from the backend --- */}
+                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('summer-carnivore-fest', 'Summer Carnivore Fest', 50.00)}>Buy Ticket</button>
               </div>
             </div>
+
             <div className="event-card">
               <img src={techHackathonImage} alt="Annual Tech Hackathon" />
               <div className="event-info">
-                <div><h3>Annual Tech Hackathon</h3>{/* ... */}</div>
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('tech-hackathon', 'Annual Tech Hackathon', 10.00)}>Buy Ticket</button>
+                <div>
+                  <span className="event-tag tech">Tech</span>
+                  <h3>Annual Tech Summit</h3>
+                  {/* ... */}
+                </div>
+                {/* --- FIX: Use the exact matching ID from the backend --- */}
+                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('tech-summit-2024', 'Annual Tech Summit', 199.99)}>Buy Ticket</button>
               </div>
             </div>
+
           </div>
         </div>
       </section>
+
     </div>
   );
 };
