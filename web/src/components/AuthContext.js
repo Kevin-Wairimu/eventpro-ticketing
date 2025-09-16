@@ -8,7 +8,9 @@ export const AuthProvider = ({ children }) => {
     catch { return null; }
   });
 
-  // This is now a simple "setter" function. Its only job is to update the state.
+  // --- NEW: State to hold the redirect path after login ---
+  const [redirectPath, setRedirectPath] = useState(null);
+
   const login = (userData) => {
     if (userData) {
       localStorage.setItem('eventoria_user', JSON.stringify(userData));
@@ -20,11 +22,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('eventoria_user');
     localStorage.removeItem('accessToken');
     setCurrentUser(null);
+    setRedirectPath(null); // Also clear the path on logout
   };
 
-  const value = { currentUser, login, logout };
+  // --- NEW: Add redirectPath and its setter to the context value ---
+  const value = { currentUser, login, logout, redirectPath, setRedirectPath };
 
   return (<AuthContext.Provider value={value}>{children}</AuthContext.Provider>);
 };
 
-export const useAuth = () => useContext(AuthContext);   
+export const useAuth = () => useContext(AuthContext);

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
-import api from '../api/api';
+// --- CRITICAL FIX: Corrected the import path for the api instance ---
+// This path assumes your api.js file is in 'src/api.js'
+import api from '../api/api'; 
 import { FaCalendarAlt, FaEnvelope, FaLock } from 'react-icons/fa';
-import '../styles/login.css';
+import '../styles/login.css'; // Use a shared auth stylesheet
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, redirectPath, setRedirectPath } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -23,11 +25,17 @@ const Login = () => {
       if (accessToken && user) {
         localStorage.setItem('accessToken', accessToken);
         login(user);
-        switch (user.role) {
-          case "admin": navigate("/admin/dashboard"); break;
-          case "employee": navigate("/employee/overview"); break;
-          case "client": navigate("/client/dashboard"); break;
-          default: navigate("/");
+
+        if (redirectPath) {
+          navigate(redirectPath.path, { state: redirectPath.state });
+          setRedirectPath(null);
+        } else {
+          switch (user.role) {
+            case "admin": navigate("/admin/dashboard"); break;
+            case "employee": navigate("/employee/overview"); break;
+            case "client": navigate("/client/dashboard"); break;
+            default: navigate("/");
+          }
         }
       } else {
         throw new Error("Invalid response from server.");

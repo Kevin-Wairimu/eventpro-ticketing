@@ -4,6 +4,7 @@ import {
   useStripe,
   useElements
 } from "@stripe/react-stripe-js";
+import '../styles/checkout.css'; // --- NEW: A dedicated stylesheet ---
 
 const CheckoutForm = ({ eventDetails }) => {
   const stripe = useStripe();
@@ -16,7 +17,8 @@ const CheckoutForm = ({ eventDetails }) => {
     e.preventDefault();
 
     if (!stripe || !elements) {
-      return; // Stripe.js has not yet loaded.
+      // Stripe.js has not yet loaded.
+      return;
     }
 
     setIsLoading(true);
@@ -24,12 +26,13 @@ const CheckoutForm = ({ eventDetails }) => {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // Make sure to change this to your payment completion page
+        // --- IMPORTANT: This is the URL the user is sent to after payment ---
         return_url: `${window.location.origin}/payment-success`,
       },
     });
 
-    // This point will only be reached if there is an immediate error.
+    // This point will only be reached if there is an immediate error, such as
+    // an invalid card number. The user will not be redirected.
     if (error.type === "card_error" || error.type === "validation_error") {
       setMessage(error.message);
     } else {
@@ -41,16 +44,24 @@ const CheckoutForm = ({ eventDetails }) => {
 
   return (
     <form id="payment-form" onSubmit={handleSubmit}>
-      <h2>Confirm your purchase</h2>
-      <p><strong>Item:</strong> {eventDetails.name}</p>
-      <p><strong>Price:</strong> ${eventDetails.price}</p>
+      <div className="checkout-header">
+        <h2>Confirm your purchase</h2>
+        <div className="order-summary">
+          <span>{eventDetails.name}</span>
+          <span>${eventDetails.price.toFixed(2)}</span>
+        </div>
+      </div>
+      
+      {/* This is the pre-built, secure Stripe form */}
       <PaymentElement id="payment-element" />
-      <button disabled={isLoading || !stripe || !elements} id="submit">
+      
+      <button disabled={isLoading || !stripe || !elements} id="submit-button">
         <span id="button-text">
-          {isLoading ? <div className="spinner" id="spinner"></div> : "Pay now"}
+          {isLoading ? <div className="spinner" id="spinner"></div> : `Pay $${eventDetails.price.toFixed(2)}`}
         </span>
       </button>
-      {/* Show any error or success messages */}
+
+      {/* Show any error messages */}
       {message && <div id="payment-message">{message}</div>}
     </form>
   );
