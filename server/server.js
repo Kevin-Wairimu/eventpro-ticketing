@@ -3,36 +3,61 @@ import mongoose from "mongoose";
 import cors from "cors";
 import bodyParser from "body-parser";
 import dotenv from 'dotenv';
-import paymentRoutes from './routes/paymentRoutes.js'; 
-// Import route files
+import http from 'http'; // Required for Socket.IO
+import { Server } from "socket.io"; // Required for Socket.IO
+
+// Import all your route files
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import paymentRoutes from './routes/paymentRoutes.js';
 
-import userRoutes from './routes/userRoutes.js';
-
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-
-// API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/events", eventRoutes);
-
-// --- 2. Register the new user routes ---
-app.use("/api/users", userRoutes);
-
-app.use("/api/payments", paymentRoutes); 
-// Simple health check route
-app.get('/', (req, res) => {
-  res.send('API is running...');
+// --- Create the HTTP server and the Socket.IO server ---
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    methods: ["GET", "POST"]
+  }
 });
 
+// Middleware to attach 'io' to every request
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+// Standard Middleware
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+app.use(express.json()); // Modern replacement for bodyParser.json()
+
+// --- API Routes ---
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/payments", paymentRoutes);
+
+// --- Socket.IO Connection Logic ---
+io.on('connection', (socket) => {
+  console.log(`Real-time connection established: ${socket.id}`);
+  socket.on('joinRoom', (room) => {
+    socket.join(room);
+    console.log(`User ${socket.id} joined room: ${room}`);
+  });
+  socket.on('disconnect', () => {
+    console.log(`Real-time connection closed: ${socket.id}`);
+  });
+});
 
 // MongoDB Connection
 mongoose
@@ -40,6 +65,10 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
-app.listen(PORT, () => {
+
+// --- THIS IS THE CRITICAL FIX ---
+// REMOVED the extra 'app.listen()' that was causing the crash.
+// We are ONLY starting the 'server' (the one with Socket.IO).
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
