@@ -301,3 +301,85 @@
     color: var(--primary-purple);
   }
 }
+
+
+
+/* === ADD THESE STYLES TO THE END of navbar.css === */
+
+/* --- Logged-In State Buttons --- */
+.btn-dashboard, .btn-logout {
+  text-decoration: none;
+  font-weight: bold;
+  padding: 12px 24px;
+  border-radius: 8px;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-dashboard {
+  background: var(--text-light);
+  color: var(--primary-purple);
+  border: 2px solid var(--text-light);
+}
+
+.btn-logout {
+  background: transparent;
+  color: var(--text-light);
+  border: 2px solid var(--text-light);
+}
+
+
+/* === DESKTOP MEDIA QUERY === */
+@media (min-width: 992px) {
+  .btn-dashboard, .btn-logout {
+    width: auto;
+    padding: 10px 22px;
+    transition: all 0.3s ease;
+  }
+
+  /* Dashboard Button (Desktop - Top of Page) */
+  .btn-dashboard {
+    background: var(--text-dark);
+    color: #fff;
+    border-color: var(--text-dark);
+  }
+  .btn-dashboard:hover {
+    background: var(--primary-purple);
+    border-color: var(--primary-purple);
+    transform: translateY(-2px);
+  }
+  /* Dashboard Button (Desktop - Scrolled) */
+  .navbar.scrolled .btn-dashboard {
+    background: var(--text-light);
+    color: var(--primary-purple);
+    border-color: var(--text-light);
+  }
+  .navbar.scrolled .btn-dashboard:hover {
+    background: #f0f0f0;
+    border-color: #f0f0f0;
+  }
+  
+  /* Logout Button (Desktop - Top of Page) */
+  .btn-logout {
+    color: var(--text-dark);
+    border-color: var(--text-dark);
+  }
+  .btn-logout:hover {
+    background: var(--text-dark);
+    color: #fff;
+  }
+  /* Logout Button (Desktop - Scrolled) */
+  .navbar.scrolled .btn-logout {
+    color: var(--text-light);
+    border-color: var(--text-light);
+  }
+  .navbar.scrolled .btn-logout:hover {
+    background: var(--text-light);
+    color: var(--primary-purple);
+  }
+}

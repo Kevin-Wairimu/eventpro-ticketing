@@ -5,6 +5,8 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true, select: false },
   role: { type: String, enum: ['client', 'employee', 'admin'], default: 'client' },
+  // --- NEW: Add a status field for the approval workflow ---
+  status: { type: String, enum: ['Pending', 'Approved', 'Denied'], default: 'Pending' },
 }, {
   timestamps: true
 });
