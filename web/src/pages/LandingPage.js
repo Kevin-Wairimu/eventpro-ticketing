@@ -2,29 +2,28 @@ import React from 'react';
 import { useAuth } from '../components/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+// --- 1. Import the new useEvents hook ---
+import { useEvents } from '../components/EventContext'; 
 import '../styles/landingPage.css';
 
-// Import your images
-import aboutImage from '../assets/about.svg';
-import foodWineImage from "../assets/wines&expo.jpg";
-import carAuctionImage from '../assets/car auction.jpg';
-import carnivoreFestImage from '../assets/carnivore-fest.jpg';
-import techHackathonImage from '../assets/tech-hackathon.jpg';
+// // Import your placeholder images
+import aboutImage from '../assets/carnivore-fest.jpg';
+// import foodWineImage from "../assets/wines&expo.jpg";
+// // Note: It's good practice to have a generic fallback image
+import defaultEventImage from "../assets/event1.jpg"; 
+
 
 const LandingPage = () => {
-  // --- UPDATED: Get setRedirectPath from context ---
+  // --- 2. Get events and loading state from the global context ---
+  const { events, loading } = useEvents();
   const { currentUser, setRedirectPath } = useAuth();
   const navigate = useNavigate();
 
-  // --- UPDATED: This function is now much smarter ---
   const handleBuyTicket = (eventId, eventName, price) => {
     const checkoutPath = `/checkout/${eventId}`;
-
     if (currentUser) {
-      // If user is logged in, go directly to checkout with event details
       navigate(checkoutPath, { state: { eventName, price } });
     } else {
-      // If user is logged out, save the destination and send to login
       setRedirectPath({ path: checkoutPath, state: { eventName, price } });
       navigate('/login');
     }
@@ -39,72 +38,83 @@ const LandingPage = () => {
         </div>
       </header>
 
-      <section id="about" className="about-section">{/* ...About content... */}</section>
-
-
-
-      {/* --- EVENTS SECTION --- */}
       <section id="events" className="events-section">
         <div className="section-container">
           <h2 className="section-title">Upcoming Events</h2>
-          <div className="events-grid">
-            
-            <div className="event-card">
-              <img src={foodWineImage} alt="Food & Wine Expo" />
-              <div className="event-info">
-                <div>
-                  <span className="event-tag corporate">Food & Wine</span>
-                  <h3>Food & Wine Expo</h3>
-                  {/* ... */}
+          
+          {loading ? (
+            <div className="loading-message">Loading events...</div>
+          ) : events.filter(e => e.status === 'Published').length === 0 ? (
+            <div className="no-events-message"><p>No upcoming events at this time.</p></div>
+          ) : (
+            <div className="events-grid">
+              {events.filter(e => e.status === 'Published').map(event => (
+                <div className="event-card" key={event._id}>
+                  <img src={event.imageUrl || defaultEventImage} alt={event.name} />
+                  <div className="event-info">
+                    <div>
+                      {/* ... other event details ... */}
+                      <h3>{event.name}</h3>
+                      <p>Price: ${event.price.toFixed(2)}</p>
+                      {/* ... */}
+                    </div>
+                    {/* --- CRITICAL FIX: Pass the real event._id and event.price --- */}
+                    <button 
+                      className="buy-ticket-btn" 
+                      onClick={() => handleBuyTicket(event._id, event.name, event.price)}
+                    >
+                      Buy Ticket
+                    </button>
+                  </div>
                 </div>
-                {/* --- FIX: Use the exact matching ID from the backend --- */}
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('food-wine-expo-2024', 'Food & Wine Expo', 75.00)}>Buy Ticket</button>
-              </div>
+              ))}
             </div>
-
-            <div className="event-card">
-              <img src={carAuctionImage} alt="Classic Car Auction" />
-              <div className="event-info">
-                <div>
-                  <span className="event-tag auction">Auction</span>
-                  <h3>Classic Car Auction</h3>
-                  {/* ... */}
-                </div>
-                {/* --- FIX: Use the exact matching ID from the backend --- */}
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('classic-car-auction-fall', 'Classic Car Auction', 25.00)}>Buy Ticket</button>
-              </div>
-            </div>
-
-            <div className="event-card">
-              <img src={carnivoreFestImage} alt="Summer Carnivore Fest" />
-              <div className="event-info">
-                <div>
-                  <span className="event-tag festival">Festival</span>
-                  <h3>Summer Carnivore Fest</h3>
-                  {/* ... */}
-                </div>
-                {/* --- FIX: Use the exact matching ID from the backend --- */}
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('summer-carnivore-fest', 'Summer Carnivore Fest', 50.00)}>Buy Ticket</button>
-              </div>
-            </div>
-
-            <div className="event-card">
-              <img src={techHackathonImage} alt="Annual Tech Hackathon" />
-              <div className="event-info">
-                <div>
-                  <span className="event-tag tech">Tech</span>
-                  <h3>Annual Tech Summit</h3>
-                  {/* ... */}
-                </div>
-                {/* --- FIX: Use the exact matching ID from the backend --- */}
-                <button className="buy-ticket-btn" onClick={() => handleBuyTicket('tech-summit-2024', 'Annual Tech Summit', 199.99)}>Buy Ticket</button>
-              </div>
-            </div>
-
-          </div>
+          )}
         </div>
       </section>
 
+      {/* --- EVENTS SECTION (NOW FULLY DYNAMIC) --- */}
+      <section id="events" className="events-section">
+        <div className="section-container">
+          <h2 className="section-title">Upcoming Events</h2>
+          
+          {/* --- 3. Add loading and empty states for a better UX --- */}
+          {loading ? (
+            <div className="loading-message">Loading events...</div>
+          ) : events.filter(e => e.status === 'Published').length === 0 ? (
+            <div className="no-events-message">
+              <p>No upcoming events at this time. Please check back soon!</p>
+            </div>
+          ) : (
+            <div className="events-grid">
+              {/* --- 4. Map over the globally managed 'events' from the context --- */}
+              {/* We only show events that the admin has marked as 'Published' */}
+              {events.filter(e => e.status === 'Published').map(event => (
+                <div className="event-card" key={event._id}>
+                  <img src={event.imageUrl || defaultEventImage} alt={event.name} />
+                  <div className="event-info">
+                    <div>
+                      {/* You can add a tag based on a property from your event data */}
+                      <span className="event-tag corporate">{event.category || 'General'}</span>
+                      <span className="event-date">{new Date(event.date).toLocaleDateString()}</span>
+                      <h3>{event.name}</h3>
+                      <p>Capacity: {event.capacity}</p>
+                      <div className="event-location"><FaMapMarkerAlt /> {event.location || 'Online'}</div>
+                    </div>
+                    {/* The price should also come from the event data */}
+                    <button 
+                      className="buy-ticket-btn" 
+                      onClick={() => handleBuyTicket(event._id, event.name, event.price || 99.99)}
+                    >
+                      Buy Ticket
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

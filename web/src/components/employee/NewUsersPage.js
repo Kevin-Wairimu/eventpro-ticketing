@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
-import user1 from '../../assets/user1.png';
-import user2 from '../../assets/user2.png';
-import user3 from '../../assets/user3.png';
+import user1 from '../../assets/wines&expo.jpg';
+import user2 from '../../assets/wines&expo.jpg';
+import user3 from '../../assets/wines&expo.jpg';
 import user4 from '../../assets/user-avatar.png';
 
 const initialNewUsers = [

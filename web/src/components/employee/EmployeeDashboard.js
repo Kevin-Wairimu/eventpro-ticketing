@@ -7,9 +7,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LineChart, BarChart, /* ... other chart imports */ } from 'recharts';
 import { FaUsers, FaUserPlus, /* ... other icon imports */ } from 'react-icons/fa';
-import user1 from '../../assets/user1.png';
-import user2 from '../../assets/user2.png';
-import user3 from '../../assets/user3.png';
+import user1 from '../../assets/wines&expo.jpg';
+import user2 from '../../assets/wines&expo.jpg';
+import user3 from '../../assets/wines&expo.jpg';
 
 // Mock data (remains the same)
 const initialNewUsers = [

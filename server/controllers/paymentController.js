@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
-
+import Event from '../models/Event.js'; 
 // CRITICAL: Ensure dotenv is configured
 dotenv.config();
 
@@ -12,40 +12,35 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+
+
+
 export const createCheckoutSession = async (req, res) => {
-  const { eventId, eventName, price } = req.body;
+  const { eventId, eventName } = req.body;
   const YOUR_DOMAIN = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-  console.log("\n--- Backend received request to create checkout session ---");
-  console.log("Event ID:", eventId);
-
-  // --- THIS IS A ROBUST TRY...CATCH BLOCK ---
   try {
-    // In a real app, you would look up the price here from your database.
-    // For now, we use a mock lookup.
-    const priceLookup = {
-      'tech-summit-2024': 199.99,
-      'food-wine-expo-2024': 75.00,
-      'classic-car-auction-fall': 25.00,
-      'summer-carnivore-fest': 50.00
-    };
-    const serverPrice = priceLookup[eventId];
+    // --- 2. CRITICAL SECURITY FIX: Find the event in the database ---
+    const event = await Event.findById(eventId);
 
-    if (!serverPrice) {
+    // If no event is found with that ID, or if it doesn't have a price, return an error.
+    if (!event || !event.price) {
       console.error(`Price lookup failed for eventId: "${eventId}"`);
-      // Always send a response
-      return res.status(400).json({ message: "Invalid event ID or price not found." });
+      return res.status(404).json({ message: "Event not found or has no price." });
     }
-    console.log(`Found price for event: ${serverPrice}`);
 
-    console.log("Attempting to create session with Stripe...");
+    // --- 3. Use the secure, server-side price from the database ---
+    const price = event.price;
+
+    console.log(`Found event: ${event.name}, Price: ${price}`);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'usd',
-          product_data: { name: `Ticket for: ${eventName}` },
-          unit_amount: Math.round(serverPrice * 100),
+          product_data: { name: `Ticket for: ${event.name}` }, // Use the name from the DB
+          unit_amount: Math.round(price * 100),
         },
         quantity: 1,
       }],
@@ -55,18 +50,61 @@ export const createCheckoutSession = async (req, res) => {
       metadata: { userId: req.user._id.toString(), eventId: eventId }
     });
     
-    console.log("Stripe session created successfully. Sending ID back to frontend.");
-    // Always send a response
     res.json({ id: session.id });
 
   } catch (error) {
-    // This will catch any error, from Stripe keys to other issues.
-    console.error("--- FATAL ERROR IN createCheckoutSession ---");
-    console.error(error); // Log the full error object
-    // Always send a response
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    console.error("Stripe Error:", error.message);
+    res.status(500).json({ message: `Stripe Error: ${error.message}` });
   }
 };
-
 // ... (your handleStripeWebhook function)
-export const handleStripeWebhook = (req, res) => { /* ... */ };
+export const handleStripeWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let event;
+
+  try {
+    // 1. Verify the event came from Stripe and is not a forgery
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.log(`❌ Webhook signature verification failed:`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // 2. Handle the 'checkout.session.completed' event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    console.log('✅ Checkout session was successful!', session);
+
+    // 3. FULFILL THE ORDER - Create the ticket in your database
+    try {
+      const { userId, eventId } = session.metadata;
+
+      // Check if a ticket for this user and event already exists to prevent duplicates
+      const ticketExists = await Ticket.findOne({ user: userId, event: eventId });
+      
+      if (ticketExists) {
+        console.log(`Ticket already exists for user ${userId} and event ${eventId}. Skipping creation.`);
+      } else {
+        // Create the new ticket document in the database
+        await Ticket.create({
+          user: userId,
+          event: eventId,
+          status: 'Approved', // Or 'Pending' if you have another layer of approval
+        });
+
+        // Optional but recommended: Increment the 'ticketsSold' count on the Event model
+        await Event.findByIdAndUpdate(eventId, { $inc: { ticketsSold: 1 } });
+        
+        console.log(`🎟️  New ticket created for user ${userId} for event ${eventId}`);
+      }
+    } catch (err) {
+      console.error("Error fulfilling order in webhook:", err);
+      // If this fails, you should have a system to retry or alert an admin
+      return res.status(500).json({ message: "Error saving ticket to database." });
+    }
+  }
+
+  // 4. Return a 200 response to Stripe to acknowledge receipt of the event
+  res.send();
+};

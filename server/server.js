@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import ticketRoutes from './routes/ticketRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -46,6 +47,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/tickets", ticketRoutes);
+app.use("/api/payments", paymentRoutes);
+
+app.use("/api/payments/webhook", express.raw({ type: 'application/json' }), (req, res, next) => {
+    // A little trick to call the imported router's specific POST handler for webhooks
+    paymentRoutes.handle(req, res, next);
+});
 
 // --- Socket.IO Connection Logic ---
 io.on('connection', (socket) => {

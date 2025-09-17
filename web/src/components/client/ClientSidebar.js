@@ -1,7 +1,8 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { FaTachometerAlt, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+// --- 1. Import the FaHome icon ---
+import { FaTachometerAlt, FaUser, FaCog, FaSignOutAlt, FaHome } from 'react-icons/fa';
 
 const ClientSidebar = ({ isOpen, toggleSidebar }) => {
   const { logout } = useAuth();
@@ -27,6 +28,15 @@ const ClientSidebar = ({ isOpen, toggleSidebar }) => {
         <ul>
           <li><NavLink to="/client/dashboard" onClick={closeMenu}><FaTachometerAlt /><span>Dashboard</span></NavLink></li>
           <li><NavLink to="/client/profile" onClick={closeMenu}><FaUser /><span>My Profile</span></NavLink></li>
+          
+          {/* --- 2. ADDED: The new Home button link --- */}
+          {/* It uses a standard NavLink that points to the root path "/" */}
+          <li>
+            <NavLink to="/" onClick={closeMenu}>
+              <FaHome />
+              <span>Home Page</span>
+            </NavLink>
+          </li>
         </ul>
       </nav>
       <div className="sidebar-footer">

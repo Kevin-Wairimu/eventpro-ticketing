@@ -1,75 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../api/api'; // Your API instance
-import { socket } from '../../socket'; // The shared socket instance
-import { toast, ToastContainer } from 'react-toastify'; // For notifications
-import 'react-toastify/dist/ReactToastify.css'; // Styles for notifications
+import React, { useState } from 'react';
+import api from '../../api/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-
-// The Reusable Modal Component does not need any changes
-const EventModal = ({ event, onClose, onSave }) => { /* ... same as your code ... */ };
+import { useEvents } from '../EventContext';
+// --- 1. Import the new, separate EventModal component ---
+import EventModal from './EventModal'; 
 
 const ManageEvents = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { events, loading } = useEvents();
   const [isModalOpen, setModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
 
-  // --- 1. Initial Data Fetch (runs only once on component mount) ---
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get('/events');
-        setEvents(response.data);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-        toast.error("Failed to load events.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
-  }, []);
-
-  // --- 2. Real-Time Listeners ---
-  useEffect(() => {
-    // Function to handle a new event created by another admin
-    const onNewEvent = (newEvent) => {
-      toast.success(`New Event Added: ${newEvent.name}`);
-      setEvents(prevEvents => [newEvent, ...prevEvents]);
-    };
-    // Function to handle an event updated by another admin
-    const onEventUpdate = (updatedEvent) => {
-      toast.info(`Event Updated: ${updatedEvent.name}`);
-      setEvents(prevEvents => prevEvents.map(e => e._id === updatedEvent._id ? updatedEvent : e));
-    };
-    // Function to handle an event deleted by another admin
-    const onEventDelete = (eventId) => {
-      toast.error(`An event was deleted.`);
-      setEvents(prevEvents => prevEvents.filter(e => e._id !== eventId));
-    };
-
-    // Attach the listeners
-    socket.on('newEventCreated', onNewEvent);
-    socket.on('eventUpdated', onEventUpdate);
-    socket.on('eventDeleted', onEventDelete);
-
-    // Clean up listeners when the component unmounts to prevent memory leaks
-    return () => {
-      socket.off('newEventCreated', onNewEvent);
-      socket.off('eventUpdated', onEventUpdate);
-      socket.off('eventDeleted', onEventDelete);
-    };
-  }, []); // Empty array ensures listeners are set up only once
-
-  // --- 3. CRUD Handlers now talk to the API ---
   const handleDelete = async (eventId) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
         await api.delete(`/events/${eventId}`);
-        // The real-time listener will handle updating the state for all clients, including this one.
-      } catch (error) {
-        toast.error("Failed to delete event.");
+        toast.success("Event deleted!");
+      } catch (error) { 
+        toast.error(error?.response?.data?.message || "Failed to delete event."); 
       }
     }
   };
@@ -78,32 +27,64 @@ const ManageEvents = () => {
     try {
       if (editingEvent) {
         await api.put(`/events/${savedEvent.id}`, savedEvent);
+        toast.success("Event updated!");
       } else {
         await api.post('/events', savedEvent);
+        toast.success("Event created!");
       }
       handleCloseModal();
-      // Real-time listeners will handle the state update.
-    } catch (error) {
-      toast.error("Failed to save event.");
+    } catch (error) { 
+      toast.error(error?.response?.data?.message || "Failed to save event."); 
     }
   };
 
   const handleOpenModal = (event = null) => { setEditingEvent(event); setModalOpen(true); };
-  const handleCloseModal = () => { setModalOpen(false); setEditingEvent(null); };
+  const handleCloseModal = () => { setEditingEvent(false); setEditingEvent(null); };
 
   if (loading) { return <div className="admin-page-content"><h2>Loading Events...</h2></div>; }
 
   return (
     <div className="admin-page-content">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme="colored" />
       <div className="dashboard-header">
         <h1>Manage Events</h1>
         <p>Create, edit, and manage all your events from this hub.</p>
-        <button className="btn-primary-admin" onClick={() => handleOpenModal()}><FaPlus /> Create New Event</button>
+        <button className="btn-primary-admin" onClick={() => handleOpenModal()}>
+          <FaPlus /> Create New Event
+        </button>
       </div>
+      
       <div className="table-container">
-        <table className="content-table">{/* ... Table JSX ... */}</table>
+        <table className="content-table">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Price</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Tickets Sold</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map(event => (
+              <tr key={event._id}>
+                <td>{event.name}</td>
+                <td>${event.price ? event.price.toFixed(2) : '0.00'}</td>
+                <td>{new Date(event.date).toLocaleDateString()}</td>
+                <td><span className={`status-pill ${event.status.toLowerCase()}`}>{event.status}</span></td>
+                <td>{event.ticketsSold} / {event.capacity}</td>
+                <td className="action-buttons">
+                  <button className="btn-icon-edit" onClick={() => handleOpenModal(event)}><FaEdit /></button>
+                  <button className="btn-icon-delete" onClick={() => handleDelete(event._id)}><FaTrash /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+      
+      {/* --- 2. The modal is now a clean, self-contained component --- */}
       {isModalOpen && <EventModal event={editingEvent} onClose={handleCloseModal} onSave={handleSaveEvent} />}
     </div>
   );
