@@ -38,38 +38,28 @@ const LandingPage = () => {
         </div>
       </header>
 
-      <section id="events" className="events-section">
+      {/* --- NEW, DEFINITIVE "ABOUT US" SECTION (Event Company Focus) --- */}
+      <section id="about" className="about-section">
         <div className="section-container">
-          <h2 className="section-title">Upcoming Events</h2>
+          <h2 className="section-title">Crafting Unforgettable Experiences</h2>
           
-          {loading ? (
-            <div className="loading-message">Loading events...</div>
-          ) : events.filter(e => e.status === 'Published').length === 0 ? (
-            <div className="no-events-message"><p>No upcoming events at this time.</p></div>
-          ) : (
-            <div className="events-grid">
-              {events.filter(e => e.status === 'Published').map(event => (
-                <div className="event-card" key={event._id}>
-                  <img src={event.imageUrl || defaultEventImage} alt={event.name} />
-                  <div className="event-info">
-                    <div>
-                      {/* ... other event details ... */}
-                      <h3>{event.name}</h3>
-                      <p>Price: ${event.price.toFixed(2)}</p>
-                      {/* ... */}
-                    </div>
-                    {/* --- CRITICAL FIX: Pass the real event._id and event.price --- */}
-                    <button 
-                      className="buy-ticket-btn" 
-                      onClick={() => handleBuyTicket(event._id, event.name, event.price)}
-                    >
-                      Buy Ticket
-                    </button>
-                  </div>
-                </div>
-              ))}
+          <div className="about-content">
+            {/* Left side with the text */}
+            <div className="about-text-wrapper">
+              <h3>Your Vision, Perfectly Executed.</h3>
+              <p>
+                At Eventoria, we are more than just planners—we are architects of unforgettable moments. Since 2015, our passion has been to bring people together, transforming ambitious visions into flawlessly executed realities. 
+              </p>
+              <p>
+                Whether it's a corporate summit that inspires, a festival that energizes, or a wedding that captures a timeless memory, our dedicated team handles every detail with precision and creativity. We believe an event's success is measured in the connections made and the memories cherished long after the day is over.
+              </p>
             </div>
-          )}
+
+            {/* Right side with the image */}
+            <div className="about-image-wrapper">
+              <img src={aboutImage} alt="A beautifully arranged corporate event hosted by Eventoria" />
+            </div>
+          </div>
         </div>
       </section>
 

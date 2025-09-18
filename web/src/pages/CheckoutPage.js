@@ -1,94 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-
-// --- Stripe Imports ---
 import { loadStripe } from '@stripe/stripe-js';
+import api from '../api/api';
 
-// --- Core Application Imports ---
-import api from '../api/api'; // Assumes api.js is in src/
-
-// --- CRITICAL: Load Stripe outside the component render tree ---
-// This prevents Stripe from being reloaded on every render.
-// Ensure your .env file has REACT_APP_STRIPE_PUBLISHABLE_KEY=your_pk_test_key
+// Load Stripe outside the component to prevent re-loading on every render
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 const CheckoutPage = () => {
   const { eventId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Get event details passed via navigation state from LandingPage.
-  // This is the most efficient way to get the data without another API call.
   const eventDetails = location.state;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // --- NEW: State to hold the initialized Stripe instance ---
+  const [stripe, setStripe] = useState(null);
 
-  // --- NEW: Robustness check ---
-  // If the user navigates directly to this page without event details,
-  // it's better to redirect them than to show a broken page.
+  // --- NEW: Effect to initialize Stripe when the component mounts ---
   useEffect(() => {
-    if (!eventDetails) {
-      console.warn("No event details found in location state. Redirecting home.");
-      navigate('/');
-    }
-  }, [eventDetails, navigate]);
-  
-  // This effect checks if Stripe loaded correctly. Your original version was perfect.
-  useEffect(() => {
-    stripePromise.then(stripe => {
-      if (!stripe) {
+    // This is a safer way to handle the promise
+    stripePromise.then(stripeInstance => {
+      if (stripeInstance) {
+        setStripe(stripeInstance);
+      } else {
         console.error("Stripe.js failed to load. Check your publishable key.");
         setError("Payment gateway failed to load. Please refresh the page.");
       }
     });
   }, []);
 
+  // Redirect if event details are missing
+  useEffect(() => {
+    if (!eventDetails) {
+      navigate('/');
+    }
+  }, [eventDetails, navigate]);
+
   const handleClick = async () => {
     setLoading(true);
     setError(null);
-    console.log("--- 1. Payment process started ---");
+
+    // --- CRITICAL FIX: Check if stripe is initialized before proceeding ---
+    if (!stripe) {
+      setError("Payment gateway is not ready. Please wait a moment and try again.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error("Stripe.js has not loaded yet. Please try again.");
-      }
-      console.log("--- 2. Stripe.js is loaded ---");
-
       // Create a checkout session on your backend
-      console.log("--- 3. Sending request to backend to create session... ---");
       const response = await api.post('/payments/create-checkout-session', {
         eventId: eventId,
         eventName: eventDetails.eventName,
-        price: eventDetails.price // Backend should verify this price
+        price: eventDetails.price
       });
       
       const session = response.data;
-      console.log("--- 4. Backend response received with session ID:", session.id, "---");
+      if (!session || !session.id) {
+        throw new Error("Failed to initialize payment session.");
+      }
 
       // Redirect to Stripe's hosted checkout page
-      console.log("--- 5. Redirecting to Stripe Checkout... ---");
       const result = await stripe.redirectToCheckout({
         sessionId: session.id,
       });
 
-      // This part only runs if the redirect itself fails immediately
       if (result.error) {
         throw new Error(result.error.message);
       }
     } catch (err) {
-      console.error("--- PAYMENT FAILED ---");
-      console.error("Full error object:", err);
       const displayMessage = err?.response?.data?.message || err.message || "An unexpected error occurred.";
       setError(`Error: ${displayMessage}`);
       setLoading(false);
     }
   };
 
-  // If we redirected, this component will unmount. If not, show the UI.
   if (!eventDetails) {
-    return <div>Redirecting...</div>; // Or a loading spinner
+    return <div>Redirecting...</div>;
   }
 
   return (
@@ -101,7 +90,13 @@ const CheckoutPage = () => {
         <h2>{eventDetails.eventName}</h2>
         <p style={{fontSize: '2rem', fontWeight: 'bold'}}>Price: ${eventDetails.price.toFixed(2)}</p>
         <hr style={{margin: '20px 0'}}/>
-        <button className="btn-primary-action" style={{width: '100%', padding: '15px'}} onClick={handleClick} disabled={loading}>
+        <button 
+          className="btn-primary-action" 
+          style={{width: '100%', padding: '15px'}} 
+          // --- CRITICAL FIX: Also disable the button if Stripe hasn't loaded ---
+          onClick={handleClick} 
+          disabled={loading || !stripe} 
+        >
           {loading ? "Redirecting to Payment..." : "Proceed to Payment"}
         </button>
         {error && <p style={{color: 'red', marginTop: '15px', fontWeight: 'bold'}}>{error}</p>}

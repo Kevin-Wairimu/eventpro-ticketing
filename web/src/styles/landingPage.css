@@ -150,40 +150,71 @@
   background-color: #fff;
   color: var(--primary-purple);
 }
+/* === REPLACE your old .about-section styles with these === */
 
-/* --- ABOUT SECTION --- */
+/* --- ABOUT SECTION STYLES (Mobile-First) --- */
+.about-section {
+  background-color: #ffffff;
+}
+
 .about-content {
-  display: flex;
-  flex-direction: column;
-  gap: 60px;
+  display: grid;
+  grid-template-columns: 1fr; /* On mobile, stack text and image vertically */
+  gap: 40px;
   align-items: center;
+  text-align: center; /* Center text on mobile */
 }
-.about-text h3 {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: var(--primary-purple);
+
+/* --- Swapped Order on Mobile --- */
+/* By default, the text now appears before the image on mobile */
+.about-text-wrapper {
+  grid-row: 1; /* This is the default, but we're being explicit */
 }
-.about-image img {
+.about-image-wrapper {
+  grid-row: 2;
+}
+
+.about-image-wrapper img {
   width: 100%;
+  max-width: 500px; /* Control image size */
+  margin: 0 auto;
   border-radius: 12px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
 }
-.stats {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  margin-top: 40px;
-  text-align: center;
-}
-.stat-number {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--primary-purple);
-}
-.stat-label {
-  color: var(--text-light);
+
+.about-text-wrapper h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 20px;
 }
 
+.about-text-wrapper p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 15px;
+}
+.about-text-wrapper p:last-of-type {
+  margin-bottom: 0;
+}
+
+
+/* === TABLET & DESKTOP MEDIA QUERY === */
+@media (min-width: 992px) {
+  .about-content {
+    /* Switch to a two-column layout: text on the left, image on the right */
+    grid-template-columns: 1.2fr 1fr; /* Give slightly more space to the text */
+    gap: 60px;
+    text-align: left; /* Align text to the left on desktop */
+  }
+
+  /* --- Reset Order on Desktop --- */
+  /* On desktop, the grid order is determined by the grid-template-columns */
+  .about-text-wrapper, .about-image-wrapper {
+    grid-row: auto;
+  }
+}
 /* --- EVENTS SECTION --- */
 .events-section {
   background-color: var(--light-bg);

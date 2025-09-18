@@ -11,6 +11,8 @@ import ScrollToTop from "./components/ScrollToTop";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 
+
+
 // --- CORE LAYOUTS ---
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -42,7 +44,7 @@ import HistoryPage from "./components/client/HistoryPage";
 
 // Load your Stripe Publishable Key from the .env file
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-
+const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 /**
  * AppLayout is the central component that manages the page structure and routes.
  */
