@@ -45,7 +45,11 @@ const Login = () => {
         throw new Error("Invalid response from server.");
       }
     } catch (err) {
-      setError("The email or password you entered is incorrect. Please try again.");
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("The email or password you entered is incorrect. Please try again.");
+      }
       setLoading(false);
     }
   };

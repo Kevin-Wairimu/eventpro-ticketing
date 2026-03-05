@@ -1,17 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaEye, FaUndo, FaTicketAlt } from 'react-icons/fa';
-
-// Mock data - replace with API call
-const mockTickets = [
-  { id: 'TIX-A4B7', event: 'Annual Tech Summit 2024', name: 'John Doe', type: 'VIP', status: 'Checked-In', price: 299.00 },
-  { id: 'TIX-C8D1', event: 'Summer Music Festival', name: 'Jane Smith', type: 'Regular', status: 'Valid', price: 89.00 },
-  { id: 'TIX-E2F5', event: 'Summer Music Festival', name: 'Peter Jones', type: 'Regular', status: 'Valid', price: 89.00 },
-  { id: 'TIX-G6H9', event: 'Annual Tech Summit 2024', name: 'Sarah Lee', type: 'Student', status: 'Refunded', price: 149.00 },
-  { id: 'TIX-I0J3', event: 'Gourmet Food & Wine Expo', name: 'Michael Chen', type: 'Group', status: 'Valid', price: 65.00 },
-  { id: 'TIX-K4L7', event: 'Summer Music Festival', name: 'Emily White', type: 'Regular', status: 'Checked-In', price: 89.00 },
-];
+import api from '../../api/api';
+import { socket } from '../../socket';
 
 const ManageTickets = () => {
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await api.get('/tickets');
+        setTickets(response.data);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+
+    socket.on('ticketCreated', (newTicket) => {
+      setTickets(prev => [newTicket, ...prev]);
+    });
+
+    return () => {
+      socket.off('ticketCreated');
+    };
+  }, []);
+
+  const filteredTickets = tickets.filter(ticket => 
+    ticket._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.user?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.event?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) return <div className="loading-container">Loading Tickets...</div>;
+
   return (
     <div className="admin-page-content">
       <div className="dashboard-header">
@@ -19,7 +46,13 @@ const ManageTickets = () => {
         <p>View ticket sales, issue refunds, and manage individual tickets.</p>
         <div className="search-bar">
           <FaSearch className="search-icon" />
-          <input type="text" className="form-input" placeholder="Search by Ticket ID, Name, or Event..." />
+          <input 
+            type="text" 
+            className="form-input" 
+            placeholder="Search by Ticket ID, Email, or Event..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
@@ -29,30 +62,39 @@ const ManageTickets = () => {
             <tr>
               <th>Ticket ID</th>
               <th>Event</th>
-              <th>Attendee Name</th>
-              <th>Type</th>
+              <th>Attendee Email</th>
               <th>Price</th>
               <th>Status</th>
+              <th>Date</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {mockTickets.map(ticket => (
-              <tr key={ticket.id}>
-                <td className="ticket-id"><FaTicketAlt /> {ticket.id}</td>
-                <td>{ticket.event}</td>
-                <td>{ticket.name}</td>
-                <td>{ticket.type}</td>
-                <td>${ticket.price.toFixed(2)}</td>
-                <td><span className={`status-pill ${ticket.status.toLowerCase().replace('-', '')}`}>{ticket.status}</span></td>
+            {filteredTickets.map(ticket => (
+              <tr key={ticket._id}>
+                <td className="ticket-id"><FaTicketAlt /> {ticket._id.substring(0, 8)}...</td>
+                <td>{ticket.event?.name || 'Unknown Event'}</td>
+                <td>{ticket.user?.email || 'N/A'}</td>
+                <td>${ticket.event?.price?.toFixed(2) || '0.00'}</td>
+                <td>
+                  <span className={`status-pill ${ticket.status.toLowerCase()}`}>
+                    {ticket.status}
+                  </span>
+                </td>
+                <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
                 <td className="action-buttons">
-                  <button className="btn-icon-view" aria-label="View Details"><FaEye /></button>
+                  <button className="btn-icon-view" title="View Details"><FaEye /></button>
                   {ticket.status !== 'Refunded' && (
-                     <button className="btn-icon-refund" aria-label="Refund Ticket"><FaUndo /></button>
+                     <button className="btn-icon-refund" title="Refund Ticket"><FaUndo /></button>
                   )}
                 </td>
               </tr>
             ))}
+            {filteredTickets.length === 0 && (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>No tickets found.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

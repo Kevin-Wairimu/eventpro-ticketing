@@ -1,8 +1,11 @@
+import dotenv from "dotenv";
+// Load environment variables immediately
+dotenv.config();
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import bodyParser from "body-parser";
-import dotenv from "dotenv";
 import http from "http"; // Required for Socket.IO
 import { Server } from "socket.io"; // Required for Socket.IO
 
@@ -13,11 +16,11 @@ import userRoutes from "./routes/userRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import ticketRoutes from './routes/ticketRoutes.js';
 
-// Load environment variables from .env file
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// Health check route
+app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
 
 // --- Create the HTTP server and the Socket.IO server ---
 const server = http.createServer(app);
@@ -48,7 +51,6 @@ app.use("/api/events", eventRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/tickets", ticketRoutes);
-app.use("/api/payments", paymentRoutes);
 
 app.use("/api/payments/webhook", express.raw({ type: 'application/json' }), (req, res, next) => {
     // A little trick to call the imported router's specific POST handler for webhooks

@@ -58,6 +58,7 @@ const Navbar = () => {
         <div className={isMenuOpen ? 'nav-content-wrapper active' : 'nav-content-wrapper'}>
           <ul className="nav-menu-list">
             <li><HashLink smooth to="/#landingpage" className="nav-links" onClick={closeMenu}>Home</HashLink></li>
+            <li><HashLink smooth to="/#events" className="nav-links" onClick={closeMenu}>Events</HashLink></li>
             <li><HashLink smooth to="/#about" className="nav-links" onClick={closeMenu}>About</HashLink></li>
             <li><HashLink smooth to="/#contact" className="nav-links" onClick={closeMenu}>Contact</HashLink></li>
           </ul>

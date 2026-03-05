@@ -1,14 +1,13 @@
 import express from 'express';
-import { createCheckoutSession, handleStripeWebhook } from '../controllers/paymentController.js';
+import { initiateMpesaPayment, handleMpesaCallback } from '../controllers/paymentController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// This route creates the session and is protected so only logged-in users can access it
-router.post('/create-checkout-session', protect, createCheckoutSession);
+// Route to initiate STK push for M-PESA
+router.post('/initiate-mpesa', protect, initiateMpesaPayment);
 
-// This route is for Stripe to send webhooks to. It needs to be public.
-// We use express.raw to get the request body as a buffer, which Stripe requires.
-router.post('/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+// Callback route for Safaricom to send results to
+router.post('/mpesa-callback', handleMpesaCallback);
 
 export default router;

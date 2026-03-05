@@ -1,109 +1,148 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
-import api from '../../api/api'; // Your API instance
-import { FaClock, FaCheckCircle } from 'react-icons/fa';
-import defaultEventImage from '../../assets/event1.jpg'; // A fallback image
-
-// --- Reusable and more robust TicketCard component ---
-const TicketCard = ({ ticket }) => {
-  // Gracefully handle cases where the event data might be missing
-  const eventName = ticket?.event?.name || 'Event details not available';
-  const eventDate = ticket?.event?.date ? new Date(ticket.event.date).toDateString() : 'Date not specified';
-  const imageUrl = ticket?.event?.imageUrl || defaultEventImage;
-  const status = ticket?.status || 'Unknown';
-
-  return (
-    <div className="ticket-card">
-      <img src={imageUrl} alt={eventName} className="ticket-image" />
-      <div className="ticket-details">
-        <h3>{eventName}</h3>
-        <p><FaClock /> {eventDate}</p>
-        <div className={`status-pill ${status.toLowerCase()}`}>
-          {status === 'Approved' && <FaCheckCircle />}
-          {status}
-        </div>
-      </div>
-    </div>
-  );
-};
+import api from '../../api/api';
+import { FaTicketAlt, FaHistory, FaCalendarCheck, FaArrowRight, FaCalendarAlt, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import '../../styles/clientDashboard.css';
 
 const ClientDashboard = () => {
   const { currentUser } = useAuth();
-  // --- UPDATED: Use fullName for a better greeting if it exists ---
-  const userName = currentUser?.fullName || (currentUser?.email ? currentUser.email.split('@')[0].replace(/\b\w/g, l => l.toUpperCase()) : 'Client');
-  
-  const [myTickets, setMyTickets] = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // --- Fetch user's tickets from the backend ---
+  const userName = currentUser?.email ? currentUser.email.split('@')[0] : 'Guest';
+
   useEffect(() => {
-    if (!currentUser) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchMyTickets = async () => {
+    const fetchTickets = async () => {
       try {
-        setLoading(true);
-        const { data } = await api.get('/tickets/mytickets');
-        setMyTickets(data);
-      } catch (err) {
-        console.error("Failed to fetch tickets:", err);
-        setError("Could not load your tickets. Please try again later.");
+        const response = await api.get('/tickets/mytickets');
+        setTickets(response.data);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
       } finally {
         setLoading(false);
       }
     };
-    
-    fetchMyTickets();
-  }, [currentUser]); 
+    fetchTickets();
+  }, []);
 
-  // Memoize the filtered lists for performance
-  const pendingTickets = useMemo(() => 
-    myTickets.filter(t => t && t.event && (t.status === 'Pending' || t.status === 'Approved')), 
-    [myTickets]
-  );
-  const pastTickets = useMemo(() => 
-    myTickets.filter(t => t && t.event && (t.event.status === 'Completed' || new Date(t.event.date) < new Date())),
-    [myTickets]
-  );
+  const stats = useMemo(() => {
+    const active = tickets.filter(t => t.status === 'Approved').length;
+    const pending = tickets.filter(t => t.status === 'Pending').length;
+    const spent = tickets.reduce((sum, t) => sum + (t.event?.price || 0), 0);
+    return { active, pending, spent };
+  }, [tickets]);
 
-  if (loading) {
-    return <div className="client-page-container"><h2>Loading Your Tickets...</h2></div>;
-  }
-  if (error) {
-    return <div className="client-page-container"><p className="error-message">{error}</p></div>;
-  }
+  const upcomingEvent = useMemo(() => {
+    return tickets
+      .filter(t => t.status === 'Approved' && new Date(t.event?.date) > new Date())
+      .sort((a, b) => new Date(a.event.date) - new Date(b.event.date))[0]?.event;
+  }, [tickets]);
+
+  if (loading) return <div className="loading-container">Loading Dashboard...</div>;
 
   return (
-    <div className="client-page-container">
-      <div className="dashboard-welcome">
-        <h1>Welcome back, {userName}!</h1>
-        <p>Here is a summary of your event tickets.</p>
+    <div className="client-dashboard-overview">
+      <div className="dashboard-header">
+        <div>
+          <h1>Hello, {userName}! 👋</h1>
+          <p>Ready for your next big experience? Here's your account summary.</p>
+        </div>
+        <Link to="/" className="btn-primary-action">
+          Browse More Events <FaArrowRight />
+        </Link>
       </div>
 
-      <section className="ticket-section">
-        <h2>Upcoming & Pending Tickets</h2>
-        {pendingTickets.length > 0 ? (
-          <div className="ticket-grid">
-            {pendingTickets.map(ticket => <TicketCard key={ticket._id || ticket.id} ticket={ticket} />)}
+      <div className="cards-container">
+        <div className="stat-card">
+          <div className="stat-icon-wrapper" style={{ background: '#e0e7ff' }}>
+            <FaTicketAlt style={{ color: '#4f46e5' }} />
           </div>
-        ) : (
-          <p className="no-tickets-message">You have no upcoming tickets.</p>
-        )}
-      </section>
+          <div>
+            <h4>Active Tickets</h4>
+            <p className="stat-value">{stats.active}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper" style={{ background: '#fef3c7' }}>
+            <FaClock style={{ color: '#d97706' }} />
+          </div>
+          <div>
+            <h4>Pending Paid</h4>
+            <p className="stat-value">{stats.pending}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper" style={{ background: '#dcfce7' }}>
+            <FaCalendarCheck style={{ color: '#16a34a' }} />
+          </div>
+          <div>
+            <h4>Total Spent</h4>
+            <p className="stat-value">KES {stats.spent.toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
 
-      <section className="ticket-section">
-        <h2>Ticket History</h2>
-        {pastTickets.length > 0 ? (
-          <div className="ticket-grid">
-            {pastTickets.map(ticket => <TicketCard key={ticket._id || ticket.id} ticket={ticket} />)}
+      <div className="dashboard-main-grid">
+        {/* Upcoming Event Spotlight */}
+        <div className="spotlight-card">
+          <div className="card-header-flex">
+            <h3>Upcoming Event</h3>
+            <Link to="/client/tickets" className="view-all-link">View All</Link>
           </div>
-        ) : (
-          <p className="no-tickets-message">You have no past tickets.</p>
-        )}
-      </section>
+          
+          {upcomingEvent ? (
+            <div className="event-spotlight-content">
+              <img src={upcomingEvent.imageUrl || 'https://via.placeholder.com/600x300'} alt={upcomingEvent.name} />
+              <div className="spotlight-info">
+                <h2>{upcomingEvent.name}</h2>
+                <div className="spotlight-details">
+                  <span><FaCalendarAlt /> {new Date(upcomingEvent.date).toLocaleDateString()}</span>
+                  <span><FaClock /> {new Date(upcomingEvent.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span><FaMapMarkerAlt /> {upcomingEvent.location || 'Venue TBA'}</span>
+                </div>
+                <button className="btn-primary-action" style={{ width: '100%', marginTop: '1.5rem', justifyContent: 'center' }}>
+                  View Ticket QR
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="empty-spotlight">
+              <FaCalendarAlt className="empty-icon" />
+              <p>No upcoming events scheduled.</p>
+              <Link to="/" className="btn-secondary-sm">Find Events</Link>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Actions & Recent History */}
+        <div className="side-panel">
+          <div className="action-card">
+            <h3>Quick Actions</h3>
+            <div className="action-buttons-grid">
+              <Link to="/client/profile" className="action-btn"><FaCalendarCheck /> Edit Profile</Link>
+              <Link to="/client/history" className="action-btn"><FaHistory /> Billing History</Link>
+            </div>
+          </div>
+
+          <div className="recent-activity-card">
+            <h3>Recent Tickets</h3>
+            <div className="activity-list">
+              {tickets.slice(0, 3).map(ticket => (
+                <div key={ticket._id} className="activity-item">
+                  <div className="activity-dot"></div>
+                  <div className="activity-info">
+                    <p className="activity-title">{ticket.event?.name}</p>
+                    <p className="activity-time">{new Date(ticket.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <span className={`status-pill-xs ${ticket.status.toLowerCase()}`}>{ticket.status}</span>
+                </div>
+              ))}
+              {tickets.length === 0 && <p className="empty-note">No recent activity.</p>}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

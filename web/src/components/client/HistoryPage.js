@@ -1,68 +1,78 @@
-import React, { useState, useMemo } from 'react';
-import { FaSearch, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
-
-// This is the complete list of all tickets
-const mockHistory = [
-  { id: 'EVT-006', eventName: 'Photography Masterclass', eventDate: '2024-11-20', status: 'Approved' },
-  { id: 'EVT-003', eventName: 'Gourmet Food & Wine Expo', eventDate: '2024-11-05', status: 'Pending' },
-  { id: 'EVT-001', eventName: 'Annual Tech Summit 2024', eventDate: '2024-10-26', status: 'Approved' },
-  { id: 'EVT-002', eventName: 'Summer Music Festival', eventDate: '2024-08-15', status: 'Completed' },
-  { id: 'EVT-004', eventName: 'Charity Gala Dinner', eventDate: '2024-12-01', status: 'Pending' },
-  { id: 'EVT-005', eventName: 'Local Marathon 2024', eventDate: '2024-06-05', status: 'Completed' },
-];
+import React, { useState, useEffect } from 'react';
+import api from '../../api/api';
+import { FaHistory, FaDownload, FaFilter, FaMoneyBillWave } from 'react-icons/fa';
+import '../../styles/clientDashboard.css';
 
 const HistoryPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSort = () => setSortOrder(order => order === 'asc' ? 'desc' : 'asc');
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await api.get('/tickets/mytickets');
+        // For history, we show everything, but maybe sorted by date descending
+        const sortedHistory = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setHistory(sortedHistory);
+      } catch (error) {
+        console.error("Error fetching transaction history:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
 
-  const filteredAndSortedTickets = useMemo(() => {
-    return mockHistory
-      .filter(ticket => ticket.eventName.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        const dateA = new Date(a.eventDate);
-        const dateB = new Date(b.eventDate);
-        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-      });
-  }, [searchTerm, sortOrder]);
+  if (loading) return <div className="loading-container">Loading your history...</div>;
 
   return (
-    <div className="client-page-container">
-      <div className="list-wrapper-client full-width">
-        <div className="list-header">
-          <div>
-            <h3>My Tickets & History</h3>
-            <p>A complete record of all your event tickets.</p>
-          </div>
-          <div className="header-actions">
-            <div className="search-bar-client">
-              <FaSearch className="search-icon" />
-              <input type="text" placeholder="Search by event name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-            </div>
-            <button className="btn-action" onClick={handleSort}>
-              {sortOrder === 'asc' ? <FaSortAmountUp /> : <FaSortAmountDown />} Sort by Date
-            </button>
-          </div>
+    <div className="client-page-content">
+      <div className="dashboard-header">
+        <h1>Purchase History</h1>
+        <p>A record of all your event ticket transactions.</p>
+      </div>
+
+      <div className="history-filters">
+        <div className="search-bar">
+          <FaFilter className="search-icon" />
+          <input type="text" className="form-input" placeholder="Filter by event name..." />
         </div>
-        <div className="table-container-client">
-          <table className="content-table-client">
-            <thead><tr><th>Event Name</th><th>Event Date</th><th>Status</th></tr></thead>
-            <tbody>
-              {filteredAndSortedTickets.length > 0 ? (
-                filteredAndSortedTickets.map(ticket => (
-                  <tr key={ticket.id}>
-                    <td>{ticket.eventName}</td>
-                    <td>{new Date(ticket.eventDate).toLocaleDateString()}</td>
-                    <td><span className={`status-pill ${ticket.status.toLowerCase()}`}>{ticket.status}</span></td>
-                  </tr>
-                ))
-              ) : (
-                <tr><td colSpan="3" className="no-results">No tickets found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <button className="btn-secondary"><FaDownload /> Export CSV</button>
+      </div>
+
+      <div className="table-container">
+        <table className="content-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Event</th>
+              <th>Transaction ID</th>
+              <th>Amount</th>
+              <th>Payment Method</th>
+              <th>Status</th>
+              <th>Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.length > 0 ? (
+              history.map(item => (
+                <tr key={item._id}>
+                  <td>{new Date(item.createdAt).toLocaleDateString()}</td>
+                  <td style={{ fontWeight: '600' }}>{item.event?.name}</td>
+                  <td className="ticket-id">TRX-{item._id.substring(0, 8).toUpperCase()}</td>
+                  <td style={{ fontWeight: '700' }}>KES {item.event?.price?.toFixed(2)}</td>
+                  <td><FaMoneyBillWave style={{ color: '#166534', marginRight: '0.5rem' }} /> M-PESA</td>
+                  <td><span className={`status-pill ${item.status.toLowerCase()}`}>{item.status}</span></td>
+                  <td><button className="btn-icon-view" title="Download Invoice"><FaDownload /></button></td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" className="no-results">No transactions found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

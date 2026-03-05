@@ -5,13 +5,13 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('eventoria_user')) || null);
-  
-  // --- THIS IS THE CRITICAL FIX ---
-  // We must define the state variable 'redirectPath' and its setter function
-  // before we can use them anywhere else in this component.
+  const [loading, setLoading] = useState(true);
   const [redirectPath, setRedirectPath] = useState(null);
 
   useEffect(() => {
+    // Simulate an initial auth check or just set loading to false since we use localStorage synchronously
+    setLoading(false);
+
     if (currentUser) {
       socket.connect();
       socket.emit('joinRoom', currentUser.role);
@@ -34,17 +34,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('eventoria_user');
     localStorage.removeItem('accessToken');
     setCurrentUser(null);
-    // This part is also crucial and now works because setRedirectPath is defined
     setRedirectPath(null); 
   };
   
-  // This value object will now work because 'redirectPath' and 'setRedirectPath' are defined above.
   const value = { 
     currentUser, 
     login, 
     logout, 
     redirectPath, 
-    setRedirectPath 
+    setRedirectPath,
+    loading
   };
 
   return (

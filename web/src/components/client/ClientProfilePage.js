@@ -1,121 +1,61 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { useAuth } from '../AuthContext';
-import userAvatar from '../../assets/user-avatar.png'; // Default avatar
+import { FaUserEdit, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaShieldAlt } from 'react-icons/fa';
+import '../../styles/clientDashboard.css';
 
 const ClientProfilePage = () => {
-  // --- Get the current user and the NEW updateUser function from context ---
-  const { currentUser, updateUser } = useAuth();
-  
-  // State to manage the form fields, pre-filled with the current user's data
-  const [fullName, setFullName] = useState(currentUser.fullName || currentUser.email.split('@')[0].replace(/\b\w/g, l => l.toUpperCase()));
-  const [email, setEmail] = useState(currentUser.email);
-  
-  // The avatar state now prioritizes the saved avatar, then the default
-  const [avatarPreview, setAvatarPreview] = useState(currentUser.avatar || userAvatar);
-  
-  // This will hold the raw file data to be "uploaded"
-  const [avatarFile, setAvatarFile] = useState(null);
-
-  const fileInputRef = useRef(null);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Create an object with the data we want to save
-    const updatedData = {
-      fullName: fullName,
-    };
-
-    // If a new avatar file was selected, convert it to base64 and add to the update
-    if (avatarFile) {
-      const reader = new FileReader();
-      reader.readAsDataURL(avatarFile);
-      reader.onloadend = () => {
-        // The result is a base64 string representing the image
-        updatedData.avatar = reader.result;
-        // Update the user in the context and localStorage
-        updateUser(updatedData);
-        alert("Profile and new avatar saved successfully!");
-      };
-    } else {
-      // If no new avatar, just update the name
-      updateUser(updatedData);
-      alert("Profile saved successfully!");
-    }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Save the file object for later conversion on submit
-      setAvatarFile(file);
-      // Create a temporary URL to preview the selected image instantly
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
+  const { currentUser } = useAuth();
 
   return (
-    <div className="client-page-container">
-      <div className="dashboard-welcome">
+    <div className="client-dashboard-overview">
+      <div className="dashboard-header">
         <h1>My Profile</h1>
-        <p>View and manage your personal information.</p>
+        <p>Manage your personal information and preferences.</p>
       </div>
 
-      <form className="settings-form" onSubmit={handleSubmit}>
-        <div className="form-card">
-          <div className="profile-header">
-            <img src={avatarPreview} alt="User Avatar" className="avatar-large" />
-            <div className="profile-info">
-              <h3>{fullName}</h3>
-              <p>{email}</p>
-            </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
-              onChange={handleFileChange} 
-              accept="image/png, image/jpeg"
-            />
-            <button type="button" className="btn-secondary-action" onClick={handleUploadClick}>
-              Change Photo
-            </button>
+      <div className="dashboard-main-grid">
+        <div className="spotlight-card">
+          <div className="card-header-flex">
+            <h3>Personal Information</h3>
+            <button className="btn-secondary-sm"><FaUserEdit /> Edit</button>
           </div>
           
-          <hr className="form-divider" />
-
-          <h2>Personal Information</h2>
-          <div className="form-grid">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem' }}>
             <div className="form-group">
-              <label htmlFor="fullName" className="form-label">Full Name</label>
-              <input 
-                type="text" 
-                id="fullName" 
-                className="form-input" 
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
+              <label className="form-label">Full Name</label>
+              <div className="form-input" style={{ background: '#f8fafc', color: '#1e293b' }}>
+                {currentUser?.email.split('@')[0]}
+              </div>
             </div>
             <div className="form-group">
-              <label htmlFor="email" className="form-label">Email Address</label>
-              <input 
-                type="email" 
-                id="email" 
-                className="form-input" 
-                value={email}
-                readOnly 
-              />
+              <label className="form-label">Email Address</label>
+              <div className="form-input" style={{ background: '#f8fafc', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaEnvelope style={{ color: '#94a3b8' }} /> {currentUser?.email}
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Phone Number</label>
+              <div className="form-input" style={{ background: '#f8fafc', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaPhoneAlt style={{ color: '#94a3b8' }} /> Not Provided
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Location</label>
+              <div className="form-input" style={{ background: '#f8fafc', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaMapMarkerAlt style={{ color: '#94a3b8' }} /> Nairobi, Kenya
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="submit" className="btn-primary-action">Save Changes</button>
+        <div className="side-panel">
+          <div className="action-card">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FaShieldAlt /> Security</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Keep your account secure by updating your password regularly.</p>
+            <button className="btn-primary-action" style={{ width: '100%', justifyContent: 'center' }}>Change Password</button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

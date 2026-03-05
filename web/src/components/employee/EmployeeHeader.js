@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../AuthContext';
 import { FaBell, FaBars } from 'react-icons/fa';
-import userAvatar from '../../assets/user-avatar.png'; // Make sure you have a placeholder avatar
+import userAvatar from '../../assets/user-avatar.png';
 
 const EmployeeHeader = ({ toggleSidebar }) => {
   const { currentUser } = useAuth();
@@ -12,21 +12,23 @@ const EmployeeHeader = ({ toggleSidebar }) => {
       <div className="header-left">
         <button className="hamburger-btn" onClick={toggleSidebar} aria-label="Toggle Sidebar"><FaBars /></button>
         <div className="header-title">
-          <h1>Employee Dashboard</h1>
-          <p>Monitor clients and manage new user registrations</p>
+          <h1>Welcome, {userName}!</h1>
+          <p>Here's your daily overview.</p>
         </div>
       </div>
+      
       <div className="header-right">
-        <div className="notification-icon">
+        <button className="notification-icon" title="Notifications">
           <FaBell />
           <span className="notification-dot"></span>
-        </div>
+        </button>
+        
         <div className="user-profile">
-          <img src={userAvatar} alt="User Avatar" className="avatar" />
           <div className="user-info">
             <span className="user-name">{userName}</span>
-            <span className="user-role">{currentUser?.role}</span>
+            <span className="user-role">Staff Member</span>
           </div>
+          <img src={userAvatar} alt="User Avatar" className="avatar" />
         </div>
       </div>
     </header>

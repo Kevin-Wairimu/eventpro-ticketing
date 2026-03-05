@@ -15,18 +15,15 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout">
-      {/* --- 2. THE FIX: Pass the state and function down as props --- */}
-      {/* The Sidebar component needs to receive 'isOpen' and 'toggleSidebar' */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       
-      <main className="main-content">
-        <div className="mobile-header">
-          <button onClick={toggleSidebar} className="hamburger-btn" aria-label="Toggle sidebar">
+      <main className="admin-main-content">
+        <div className="mobile-header" style={{ display: 'none', padding: '1rem', borderBottom: '1px solid var(--border-color)', background: 'white' }}>
+          <button onClick={toggleSidebar} className="hamburger-btn" aria-label="Toggle sidebar" style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>
             <FaBars />
           </button>
         </div>
-        {/* The overlay also needs the toggle function to close the menu */}
-        {isSidebarOpen && <div className="overlay" onClick={toggleSidebar}></div>}
+        {isSidebarOpen && <div className="overlay" onClick={toggleSidebar} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 }}></div>}
         
         <Outlet />
       </main>

@@ -31,7 +31,8 @@ api.interceptors.response.use(
   // If the response is an error...
   async (error) => {
     // Check if the error is a 401 Unauthorized error
-    if (error.response && error.response.status === 401) {
+    // AND it's NOT a login attempt (since login attempts can naturally return 401)
+    if (error.response && error.response.status === 401 && !error.config.url.endsWith('/auth/login')) {
       console.log("Token expired or invalid. Logging out...");
       
       // 1. Clear all authentication data from storage
