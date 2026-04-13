@@ -1,14 +1,19 @@
 import Ticket from '../models/Ticket.js';
+import User from '../models/User.js';
+import Event from '../models/Event.js';
 
 // @desc    Get all tickets for admin/employee
 // @route   GET /api/tickets
 // @access  Private (Admin/Employee)
 export const getAllTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find({})
-      .populate('user', 'email')
-      .populate('event', 'name price date')
-      .sort({ createdAt: -1 });
+    const tickets = await Ticket.findAll({
+      include: [
+        { model: User, attributes: ['email'] },
+        { model: Event, attributes: ['name', 'price', 'date'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
     res.json(tickets);
   } catch (error) {
     console.error("Error fetching all tickets:", error);
@@ -22,10 +27,14 @@ export const getAllTickets = async (req, res) => {
 export const getMyTickets = async (req, res) => {
   try {
     // req.user is added by the 'protect' middleware
-    // Find all tickets where the 'user' field matches the logged-in user's ID.
-    // .populate('event') is the magic part: it automatically fetches the linked
-    // event details (like name, date, imageUrl) and includes them in the response.
-    const tickets = await Ticket.find({ user: req.user._id }).populate('event', 'name date imageUrl status');
+    // Use Sequelize to find all tickets for this userId
+    const tickets = await Ticket.findAll({
+      where: { userId: req.user.id },
+      include: [
+        { model: Event, attributes: ['name', 'date', 'imageUrl', 'status'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
     
     res.json(tickets);
   } catch (error) {
@@ -33,4 +42,3 @@ export const getMyTickets = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-

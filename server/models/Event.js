@@ -1,20 +1,48 @@
-import mongoose from "mongoose";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
-const eventSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  date: { type: Date, required: true },
-  status: { type: String, enum: ['Draft', 'Published', 'Cancelled'], default: 'Draft' },
-  capacity: { type: Number, required: true },
-  ticketsSold: { type: Number, default: 0 },
-  price: { type: Number, required: true, default: 0 },
-  // You might want to add other fields here later
-  location: { type: String },
-  category: { type: String },
-  imageUrl: { type: String },
-}, { 
-  timestamps: true // Automatically adds createdAt and updatedAt
+const Event = sequelize.define('Event', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  date: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  status: {
+    type: DataTypes.ENUM('Draft', 'Published', 'Cancelled'),
+    defaultValue: 'Draft',
+  },
+  capacity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  ticketsSold: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
+  price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0.00,
+  },
+  location: {
+    type: DataTypes.STRING,
+  },
+  category: {
+    type: DataTypes.STRING,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+  },
+}, {
+  timestamps: true,
 });
-
-const Event = mongoose.model('Event', eventSchema);
 
 export default Event;

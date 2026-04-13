@@ -7,10 +7,10 @@ dotenv.config();
 
 export const initiateMpesaPayment = async (req, res) => {
   const { eventId, phoneNumber } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   try {
-    const event = await Event.findById(eventId);
+    const event = await Event.findByPk(eventId);
     if (!event || !event.price) {
       return res.status(404).json({ message: "Event not found or has no price." });
     }

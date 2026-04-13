@@ -1,27 +1,26 @@
-import mongoose from "mongoose";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+import Event from './Event.js';
+import User from './User.js';
 
-const ticketSchema = new mongoose.Schema({
-  event: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'Event' // This creates a link to your Event model
-  },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User' // This creates a link to your User model
+const Ticket = sequelize.define('Ticket', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
   },
   status: {
-    type: String,
-    enum: ['Pending', 'Approved', 'Completed'],
-    default: 'Pending'
+    type: DataTypes.ENUM('Pending', 'Approved', 'Completed'),
+    defaultValue: 'Pending',
   },
-  // You can add more details here later, like price paid, seat number, etc.
 }, {
-  timestamps: true // Automatically adds createdAt and updatedAt
+  timestamps: true,
 });
 
-const Ticket = mongoose.model('Ticket', ticketSchema);
+// Associations
+Ticket.belongsTo(Event, { foreignKey: 'eventId' });
+Ticket.belongsTo(User, { foreignKey: 'userId' });
+Event.hasMany(Ticket, { foreignKey: 'eventId' });
+User.hasMany(Ticket, { foreignKey: 'userId' });
 
-// This line is crucial for the import to work correctly
 export default Ticket;

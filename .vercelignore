@@ -1,0 +1,11 @@
+.sfdx/
+.git/
+server/node_modules/
+web/node_modules/
+server/test-db.js
+server/testMpesa.js
+server/seedEvents.js
+server/.env
+web/.env
+README.md
+GEMINI.md

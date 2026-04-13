@@ -1,25 +1,56 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true, select: false },
-  role: { type: String, enum: ['client', 'employee', 'admin'], default: 'client' },
-  // --- NEW: Add a status field for the approval workflow ---
-  status: { type: String, enum: ['Pending', 'Approved', 'Denied'], default: 'Pending' },
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true,
+    },
+    set(value) {
+      if (value) {
+        this.setDataValue('email', value.toLowerCase());
+      }
+    }
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  role: {
+    type: DataTypes.ENUM('client', 'employee', 'admin'),
+    defaultValue: 'client',
+  },
+  status: {
+    type: DataTypes.ENUM('Pending', 'Approved', 'Denied'),
+    defaultValue: 'Pending',
+  },
 }, {
-  timestamps: true
+  hooks: {
+    beforeSave: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+  },
+  defaultScope: {
+    attributes: { exclude: ['password'] },
+  },
+  scopes: {
+    withPassword: {
+      attributes: {},
+    },
+  },
+  timestamps: true,
 });
-
-// This function automatically hashes the password before a NEW user is saved.
-// This part is working correctly and will remain.
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-const User = mongoose.model('User', userSchema);
 
 export default User;
