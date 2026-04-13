@@ -18,8 +18,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/web/$1",
-      "check": true
+      "destination": "/web/$1"
     },
     {
       "source": "/(.*)",
