@@ -1,20 +1,17 @@
 import React from 'react';
 import { useAuth } from '../components/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaArrowRight, FaStar, FaCheckCircle } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 // --- 1. Import the new useEvents hook ---
 import { useEvents } from '../components/EventContext'; 
 import '../styles/landingPage.css';
 
-// // Import your placeholder images
+// Import images
 import aboutImage from '../assets/carnivore-fest.jpg';
-// import foodWineImage from "../assets/wines&expo.jpg";
-// // Note: It's good practice to have a generic fallback image
 import defaultEventImage from "../assets/event1.jpg"; 
 
-
 const LandingPage = () => {
-  // --- 2. Get events and loading state from the global context ---
   const { events, loading } = useEvents();
   const { currentUser, setRedirectPath } = useAuth();
   const navigate = useNavigate();
@@ -29,80 +26,172 @@ const LandingPage = () => {
     }
   };
 
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.6 }
+  };
+
   return (
     <div className="landing-page" id='landingpage'>
+      {/* Hero Section */}
       <header className="hero">
-        <div className="hero-content">
-          <h1>Unforgettable <span className="highlight">Events</span> Await You</h1>
-          <p className="hero-subtitle">Creating magical moments and extraordinary experiences that bring people together since 2022.</p>
+        <div className="hero-overlay"></div>
+        <motion.div 
+          className="hero-content"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <span className="hero-badge">Next Generation Ticketing</span>
+          <h1>Unforgettable <span className="highlight">Experiences</span> Await You</h1>
+          <p className="hero-subtitle">Creating magical moments and extraordinary connections through seamless event management and discovery.</p>
+          <div className="hero-actions">
+            <a href="#events" className="btn-primary">Explore Events <FaArrowRight /></a>
+            <a href="#about" className="btn-secondary">Learn More</a>
+          </div>
+        </motion.div>
+        <div className="hero-scroll-indicator">
+          <div className="mouse"></div>
         </div>
       </header>
 
-      {/* --- NEW, DEFINITIVE "ABOUT US" SECTION (Event Company Focus) --- */}
-      <section id="about" className="about-section">
+      {/* Stats Section */}
+      <section className="stats-bar">
         <div className="section-container">
-          <h2 className="section-title">Crafting Unforgettable Experiences</h2>
-          
-          <div className="about-content">
-            {/* Left side with the text */}
-            <div className="about-text-wrapper">
-              <h3>Your Vision, Perfectly Executed.</h3>
-              <p>
-                At Eventoria, we are more than just planners—we are architects of unforgettable moments. Since 2015, our passion has been to bring people together, transforming ambitious visions into flawlessly executed realities. 
-              </p>
-              <p>
-                Whether it's a corporate summit that inspires, a festival that energizes, or a wedding that captures a timeless memory, our dedicated team handles every detail with precision and creativity. We believe an event's success is measured in the connections made and the memories cherished long after the day is over.
-              </p>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <span className="stat-number">150+</span>
+              <span className="stat-label">Events Hosted</span>
             </div>
-
-            {/* Right side with the image */}
-            <div className="about-image-wrapper">
-              <img src={aboutImage} alt="A beautifully arranged corporate event hosted by Eventoria" />
+            <div className="stat-item">
+              <span className="stat-number">50k+</span>
+              <span className="stat-label">Tickets Sold</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">99%</span>
+              <span className="stat-label">Customer Satisfaction</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">24/7</span>
+              <span className="stat-label">Expert Support</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* --- EVENTS SECTION (NOW FULLY DYNAMIC) --- */}
+      {/* About Section */}
+      <section id="about" className="about-section">
+        <div className="section-container">
+          <motion.div {...fadeInUp}>
+            <h2 className="section-title">Crafting Unforgettable Moments</h2>
+          </motion.div>
+          
+          <div className="about-content">
+            <motion.div 
+              className="about-text-wrapper"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <h3>Your Vision, Perfectly Executed.</h3>
+              <p>
+                At Eventoria, we are more than just planners—we are architects of unforgettable experiences. Since 2015, our passion has been to bring people together, transforming ambitious visions into flawlessly executed realities. 
+              </p>
+              <ul className="about-features">
+                <li><FaCheckCircle className="feature-icon" /> Premium Venue Selection</li>
+                <li><FaCheckCircle className="feature-icon" /> End-to-end Event Planning</li>
+                <li><FaCheckCircle className="feature-icon" /> Seamless Ticketing Experience</li>
+                <li><FaCheckCircle className="feature-icon" /> Real-time Support & Analytics</li>
+              </ul>
+              <button className="learn-more-btn" onClick={() => navigate('/about')}>Discover Our Story</button>
+            </motion.div>
+
+            <motion.div 
+              className="about-image-wrapper"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="image-experience-badge">
+                <span className="years">10+</span>
+                <span className="text">Years of Excellence</span>
+              </div>
+              <img src={aboutImage} alt="Eventoria Experience" />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Events Section */}
       <section id="events" className="events-section">
         <div className="section-container">
-          <h2 className="section-title">Upcoming Events</h2>
+          <motion.div className="events-header" {...fadeInUp}>
+            <h2 className="section-title">Upcoming Events</h2>
+            <p className="section-subtitle">Discover and book the most anticipated events happening around you.</p>
+          </motion.div>
           
-          {/* --- 3. Add loading and empty states for a better UX --- */}
           {loading ? (
-            <div className="loading-message">Loading events...</div>
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Fetching amazing events...</p>
+            </div>
           ) : events.filter(e => e.status === 'Published').length === 0 ? (
-            <div className="no-events-message">
-              <p>No upcoming events at this time. Please check back soon!</p>
+            <div className="no-events-state">
+              <div className="no-events-icon">📅</div>
+              <h3>No Events Found</h3>
+              <p>We're currently preparing some exciting new events. Please check back soon!</p>
             </div>
           ) : (
             <div className="events-grid">
-              {/* --- 4. Map over the globally managed 'events' from the context --- */}
-              {/* We only show events that the admin has marked as 'Published' */}
-              {events.filter(e => e.status === 'Published').map(event => (
-                <div className="event-card" key={event._id}>
-                  <img src={event.imageUrl || defaultEventImage} alt={event.name} />
+              {events.filter(e => e.status === 'Published').map((event, index) => (
+                <motion.div 
+                  className="event-card" 
+                  key={event.id || event._id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="card-image">
+                    <img src={event.imageUrl || defaultEventImage} alt={event.name} />
+                    <div className="card-price-tag">${event.price || 0}</div>
+                  </div>
                   <div className="event-info">
-                    <div>
-                      {/* You can add a tag based on a property from your event data */}
-                      <span className="event-tag corporate">{event.category || 'General'}</span>
-                      <span className="event-date">{new Date(event.date).toLocaleDateString()}</span>
-                      <h3>{event.name}</h3>
-                      <p>Capacity: {event.capacity}</p>
-                      <div className="event-location"><FaMapMarkerAlt /> {event.location || 'Online'}</div>
+                    <div className="event-meta">
+                      <span className="event-tag">{event.category || 'General'}</span>
+                      <span className="event-date"><FaCalendarAlt /> {new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </div>
-                    {/* The price should also come from the event data */}
+                    <h3>{event.name}</h3>
+                    <div className="event-details">
+                      <span className="event-location"><FaMapMarkerAlt /> {event.location || 'Online'}</span>
+                      <span className="event-capacity"><FaUsers /> {event.capacity} Slots</span>
+                    </div>
                     <button 
                       className="buy-ticket-btn" 
-                      onClick={() => handleBuyTicket(event._id, event.name, event.price || 99.99)}
+                      onClick={() => handleBuyTicket(event.id || event._id, event.name, event.price || 0)}
                     >
-                      Buy Ticket
+                      Secure Your Spot
                     </button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-section">
+        <div className="section-container">
+          <motion.div className="cta-content" {...fadeInUp}>
+            <h2>Ready to Host Your Own Event?</h2>
+            <p>Join hundreds of organizers who trust Eventoria for their ticketing and management needs.</p>
+            <button className="btn-white" onClick={() => navigate('/register')}>Get Started Today</button>
+          </motion.div>
         </div>
       </section>
     </div>

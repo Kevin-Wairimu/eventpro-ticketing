@@ -16,6 +16,7 @@ import ClientLayout from './components/client/ClientLayout';
 
 // --- ALL PAGES ---
 import LandingPage from "./pages/LandingPage";
+import BrowseEvents from "./pages/BrowseEvents";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -50,6 +51,7 @@ const AppLayout = () => {
         <Routes>
           {/* === Public Routes === */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/events" element={<BrowseEvents />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
